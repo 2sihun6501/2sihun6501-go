@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>이동 중...</title>
+<style>
+body{display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;background:#f5f5f5;color:#333}
+.box{text-align:center}
+.spinner{width:32px;height:32px;border:3px solid #ddd;border-top-color:#333;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="box">
+<div class="spinner"></div>
+<p>상품 페이지로 이동 중입니다...</p>
+</div>
+<script>
+(function(){
+  try {
+    var url = '';
+    var params = new URLSearchParams(location.search);
+
+    // Mode 1: Compact AFFSDP (?p=pageKey&i=itemId&v=vendorItemId)
+    var p = params.get('p');
+    var i = params.get('i');
+    var v = params.get('v');
+    if (p && i && v) {
+      url = 'https://link.coupang.com/re/AFFSDP'
+        + '?lptag=AF2476838'
+        + '&subid=navercafe'
+        + '&pageKey=' + encodeURIComponent(p)
+        + '&itemId=' + encodeURIComponent(i)
+        + '&vendorItemId=' + encodeURIComponent(v);
+    }
+
+    // Mode 2: Keyword search AFFSRP (?k=keyword)
+    var k = params.get('k');
+    if (!url && k) {
+      url = 'https://link.coupang.com/re/AFFSRP'
+        + '?lptag=AF2476838'
+        + '&subid=navercafe'
+        + '&keyword=' + encodeURIComponent(k);
+    }
+
+    // Mode 3: Legacy full URL base64 hash (#base64url)
+    if (!url) {
+      var h = location.hash.slice(1);
+      if (!h) { document.querySelector('p').textContent = '링크 정보가 없습니다.'; return; }
+      url = decodeURIComponent(atob(h.replace(/-/g,'+').replace(/_/g,'/')));
+    }
+
+    if (!/^https?:\/\//i.test(url)) { document.querySelector('p').textContent = '잘못된 링크입니다.'; return; }
+
+    // no-referrer 로 이동 — 쿠팡에 cafe.naver.com Referer 전달 차단
+    var a = document.createElement('a');
+    a.href = url;
+    a.rel = 'noreferrer noopener';
+    a.referrerPolicy = 'no-referrer';
+    document.body.appendChild(a);
+    a.click();
+
+    // 폴백: meta refresh (페이지 수준 no-referrer 정책이 적용됨)
+    var meta = document.createElement('meta');
+    meta.httpEquiv = 'refresh';
+    meta.content = '1;url=' + url;
+    document.head.appendChild(meta);
+  } catch(e) {
+    document.querySelector('p').textContent = '링크 처리 오류: ' + e.message;
+  }
+})();
+</script>
+</body>
+</html>
